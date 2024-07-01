@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if [ -z "$1" -o "$1" == "--help" ]; then
+  echo "usage: `basename "$0"` modname [args]"
+  exit 0
+fi
+
+set -x
+if lsmod | grep -q "$1"; then
+  rmmod "$1"
+fi
+modprobe "$@"

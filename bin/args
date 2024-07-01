@@ -1,0 +1,8 @@
+#!/bin/sh
+
+I=1
+while [[ "$#" -gt 0 ]]; do
+	echo "${I}: \"$1\""
+	I=$((I+1))
+	shift
+done

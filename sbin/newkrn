@@ -1,0 +1,46 @@
+#!/bin/bash
+SELF=$(basename "$0")
+
+if [ -f ".version" -a -z "$1" ]; then
+	REV=`cat .version`
+else
+	REV="$1"
+fi
+
+if [ -z "${REV}" -o "$1" = '--help' ]; then
+	echo "usage: $SELF [revision]"
+	exit 1
+fi
+
+set -eu
+
+if [ ! -d "/boot/grub" ]; then
+	echo "$SELF: mount /boot first..."
+	exit 1
+fi
+
+THIS=$(cut -f 1 -d - include/config/kernel.release)
+if [ -z "$THIS" ]; then
+	echo "$SELF: Failed to determine version."
+	exit 1
+fi
+VER="${THIS}-${REV}"
+echo "$VER"
+
+TARGET_K="/boot/kernel-${VER}"
+TARGET_C="/boot/config-${VER}"
+
+if [ -e "${TARGET_K}" ]; then
+	echo "$SELF: ${TARGET_K} exists already"
+	exit 1
+fi
+if [ -e "${TARGET_C}" ]; then
+	echo "$SELF: ${TARGET_C} exists already"
+	exit 1
+fi
+
+cp -aLvn "arch/x86_64/boot/bzImage" "${TARGET_K}"
+cp -avn ".config" "${TARGET_C}"
+
+grub-mkconfig -o /boot/grub/grub.cfg
+
